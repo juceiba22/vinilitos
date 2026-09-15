@@ -8,9 +8,8 @@ página propia estilo vinilo con portada y título auto-completados.
 ## Stack
 
 - Next.js 16 (App Router) + TypeScript + Tailwind CSS 4
-- Prisma 6 + SQLite (`prisma/dev.db`) — pensado para migrar a Postgres en
-  producción sin cambiar el código de la app, solo el `datasource` y el
-  `DATABASE_URL`.
+- Prisma 6 + Postgres (misma base para local y producción — ver
+  `.env.example` para el formato de `DATABASE_URL`).
 - Sin librerías externas de UI: todo el diseño "vinilo" es CSS/Tailwind +
   un componente `VinylDisc`.
 
@@ -18,12 +17,30 @@ página propia estilo vinilo con portada y título auto-completados.
 
 ```bash
 npm install
-npm run db:migrate   # crea prisma/dev.db con el esquema
+# copiá .env.example a .env y completá DATABASE_URL con tu Postgres
+npm run db:migrate   # aplica el esquema a tu base
 npm run codes:generate "Nombre de la tirada" 10   # genera 10 códigos de activación
 npm run dev
 ```
 
 Abrí `http://localhost:3000`.
+
+### Deploy en Vercel
+
+El script `vercel-build` (`prisma migrate deploy && next build`) corre
+las migraciones pendientes automáticamente en cada deploy — no hace falta
+correrlas a mano contra producción. Solo hay que cargar en Settings →
+Environment Variables del proyecto en Vercel las mismas variables que
+`.env.example`: `DATABASE_URL`, `CRON_SECRET`, `ADMIN_PASSWORD`,
+`RESEND_API_KEY`, `EMAIL_FROM`, `APP_URL` (con el dominio real de
+producción).
+
+Las páginas que leen de la base en cada visita
+(`/admin/codes`, `/admin/pages`, `/admin/renewals`) están marcadas
+`export const dynamic = "force-dynamic"` a propósito: sin eso, Next.js
+intenta pre-renderizarlas como estáticas en build time, lo que dispara una
+consulta a la base durante el build — y en el entorno de build de Vercel
+`DATABASE_URL` no está disponible de la misma forma que en runtime.
 
 ## Flujo de uso
 
