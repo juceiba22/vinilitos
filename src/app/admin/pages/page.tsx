@@ -3,6 +3,10 @@ import { prisma } from "@/lib/prisma";
 import AdminNav from "@/components/AdminNav";
 import { daysUntil, isExpired } from "@/lib/subscription";
 
+// Muestra datos en vivo (vencimientos) — nunca debe quedar cacheada como
+// página estática, ni intentar consultar la base en build time.
+export const dynamic = "force-dynamic";
+
 export default async function AdminPagesPage() {
   const pages = await prisma.page.findMany({
     orderBy: { subscriptionExpiresAt: "asc" },

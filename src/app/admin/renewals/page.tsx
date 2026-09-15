@@ -2,6 +2,10 @@ import { prisma } from "@/lib/prisma";
 import AdminNav from "@/components/AdminNav";
 import BatchCodesPanel, { type Batch } from "@/components/BatchCodesPanel";
 
+// Lista tiradas en vivo — nunca cachear como estática ni consultar la base
+// en build time.
+export const dynamic = "force-dynamic";
+
 export default async function AdminRenewalsPage() {
   const codes = await prisma.renewalCode.findMany({
     orderBy: { createdAt: "desc" },
