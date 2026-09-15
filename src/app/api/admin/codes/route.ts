@@ -11,10 +11,33 @@ export async function GET(req: NextRequest) {
   const codes = await prisma.activationCode.findMany({
     where: { batchName },
     orderBy: { createdAt: "asc" },
-    select: { code: true, used: true },
+    select: { code: true, used: true, nfcWritten: true },
   });
 
   return NextResponse.json({ codes });
+}
+
+export async function PATCH(req: NextRequest) {
+  const body = await req.json().catch(() => null);
+  const code = typeof body?.code === "string" ? body.code.trim().toUpperCase() : "";
+  const nfcWritten = Boolean(body?.nfcWritten);
+
+  if (!code) {
+    return NextResponse.json({ error: "Falta el código." }, { status: 400 });
+  }
+
+  const updated = await prisma.activationCode
+    .update({
+      where: { code },
+      data: { nfcWritten, nfcWrittenAt: nfcWritten ? new Date() : null },
+    })
+    .catch(() => null);
+
+  if (!updated) {
+    return NextResponse.json({ error: "Código no encontrado." }, { status: 404 });
+  }
+
+  return NextResponse.json({ ok: true });
 }
 
 export async function POST(req: NextRequest) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { QRCodeSVG } from "qrcode.react";
+import { buildActivationUrl } from "@/lib/activationUrl";
 
 interface QrCodeGridProps {
   codes: string[];
@@ -8,12 +9,6 @@ interface QrCodeGridProps {
 }
 
 export default function QrCodeGrid({ codes, title }: QrCodeGridProps) {
-  // Se arma con el origin actual del browser, así funciona igual en
-  // localhost que en producción sin depender de una env var expuesta al
-  // cliente.
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
-  const buildUrl = (code: string) =>
-    `${origin}/activar?code=${encodeURIComponent(code)}`;
   return (
     <div>
       <div className="flex items-center justify-between mb-3 print:hidden">
@@ -37,7 +32,7 @@ export default function QrCodeGrid({ codes, title }: QrCodeGridProps) {
             key={code}
             className="flex flex-col items-center gap-1 p-2 break-inside-avoid"
           >
-            <QRCodeSVG value={buildUrl(code)} size={120} />
+            <QRCodeSVG value={buildActivationUrl(code)} size={120} />
             <span className="text-[11px] font-mono text-black">{code}</span>
           </div>
         ))}

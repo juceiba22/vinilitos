@@ -18,12 +18,14 @@ export default async function AdminCodesPage() {
     if (existing) {
       existing.total += 1;
       if (c.used) existing.used += 1;
+      if (c.nfcWritten) existing.nfcWritten = (existing.nfcWritten ?? 0) + 1;
       if (c.createdAt > (existing.createdAt as Date)) existing.createdAt = c.createdAt;
     } else {
       batches.set(key, {
         batchName: key,
         total: 1,
         used: c.used ? 1 : 0,
+        nfcWritten: c.nfcWritten ? 1 : 0,
         createdAt: c.createdAt,
       });
     }

@@ -15,6 +15,11 @@ model ActivationCode {
   batchName String? // ej: "Facundo Bronstein Vol.1 - tirada 50u"
   used      Boolean   @default(false)
   usedAt    DateTime?
+  // Marcado desde el panel admin cuando Vinilitos ya grabó este código en el
+  // NFC (o lo imprimió como QR) del vinilito físico correspondiente.
+  // Independiente de `used`: se puede grabar antes de que el músico active.
+  nfcWritten   Boolean   @default(false)
+  nfcWrittenAt DateTime?
   createdAt DateTime  @default(now())
   page      Page?
 }

@@ -83,8 +83,17 @@ día:
 
 - **`/admin/codes`**: generar un lote nuevo de códigos de activación (nombre
   de tirada + cantidad) y ver las tiradas existentes con cuántos códigos
-  están usados vs. pendientes. Al generar, muestra la lista de códigos para
-  copiar y mandar a grabar en los NFC / imprimir en los QR.
+  están usados / grabados vs. pendientes.
+  - **"Ver QR"** muestra los códigos de una tirada como grilla de QR
+    imprimible (cada uno apunta a `/activar?code=...`), con un botón
+    "Imprimir" pensado para mandar a producción.
+  - **"Grabar NFC"** (`/admin/codes/nfc?batch=...`) es la vista para hacer
+    el trabajo físico uno por uno: un código a la vez con su QR grande,
+    botón "Marcar grabado y siguiente" que guarda el estado
+    (`ActivationCode.nfcWritten`) y salta automáticamente al próximo
+    pendiente, más una lista de todos los códigos de la tirada para saltar
+    a cualquiera puntual. Pensada para usarse desde el celular mientras se
+    graba cada tag.
 - **`/admin/renewals`**: lo mismo pero para códigos de renovación (ver
   sección de vencimiento más abajo) — se generan cuando un músico paga la
   renovación presencialmente.

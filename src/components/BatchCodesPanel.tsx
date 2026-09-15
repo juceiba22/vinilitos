@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import QrCodeGrid from "./QrCodeGrid";
 
@@ -8,6 +9,7 @@ export interface Batch {
   batchName: string;
   total: number;
   used: number;
+  nfcWritten?: number;
   createdAt: Date | string;
 }
 
@@ -168,6 +170,7 @@ export default function BatchCodesPanel({
                   <th className="py-2 pr-4">Tirada</th>
                   <th className="py-2 pr-4">Usados</th>
                   <th className="py-2 pr-4">Total</th>
+                  {qr && <th className="py-2 pr-4">Grabados</th>}
                   <th className="py-2 pr-4">Última actividad</th>
                   {qr && <th className="py-2"></th>}
                 </tr>
@@ -178,18 +181,29 @@ export default function BatchCodesPanel({
                     <td className="py-2 pr-4">{b.batchName}</td>
                     <td className="py-2 pr-4">{b.used}</td>
                     <td className="py-2 pr-4">{b.total}</td>
+                    {qr && (
+                      <td className="py-2 pr-4">
+                        {b.nfcWritten ?? 0}/{b.total}
+                      </td>
+                    )}
                     <td className="py-2 pr-4">
                       {new Date(b.createdAt).toLocaleDateString("es-AR")}
                     </td>
                     {qr && (
-                      <td className="py-2">
+                      <td className="py-2 whitespace-nowrap">
                         <button
                           type="button"
                           onClick={() => handleViewCodes(b.batchName)}
-                          className="underline text-vinyl-cream-dim hover:text-vinyl-cream"
+                          className="underline text-vinyl-cream-dim hover:text-vinyl-cream mr-3"
                         >
                           {viewingBatch === b.batchName ? "Ocultar" : "Ver QR"}
                         </button>
+                        <Link
+                          href={`/admin/codes/nfc?batch=${encodeURIComponent(b.batchName)}`}
+                          className="underline text-vinyl-accent"
+                        >
+                          Grabar NFC
+                        </Link>
                       </td>
                     )}
                   </tr>
