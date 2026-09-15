@@ -46,6 +46,7 @@ export default async function AdminCodesPage() {
         apiUrl="/api/admin/codes"
         activateHint="Cada uno se activa en /activar?code=<CODIGO>."
         batches={sortedBatches}
+        qr={{ listApiUrl: "/api/admin/codes" }}
       />
     </main>
   );
