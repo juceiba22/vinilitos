@@ -25,9 +25,6 @@ export async function POST(req: NextRequest) {
   if (!code) {
     return NextResponse.json({ error: "Falta el código de activación." }, { status: 400 });
   }
-  if (!artistName) {
-    return NextResponse.json({ error: "Falta el nombre del artista." }, { status: 400 });
-  }
   if (contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail)) {
     return NextResponse.json({ error: "El mail no es válido." }, { status: 400 });
   }
@@ -37,17 +34,29 @@ export async function POST(req: NextRequest) {
   if (!activation) {
     return NextResponse.json({ error: "Código inválido." }, { status: 404 });
   }
-  if (activation.used) {
+
+  // Varios vinilitos físicos (mismo batchName) son el mismo álbum: si otro
+  // código de esta tirada ya creó la página, este no crea una segunda —
+  // manda directo a la página pública ya existente. Nunca entrega editToken
+  // acá: el acceso de edición es solo para quien activó por primera vez.
+  if (activation.batchName) {
     const existingPage = await prisma.page.findUnique({
-      where: { activationCodeId: activation.id },
+      where: { activationBatchName: activation.batchName },
     });
-    return NextResponse.json(
-      {
-        error: "Este código ya fue canjeado.",
-        existingSlug: existingPage?.slug ?? null,
-      },
-      { status: 409 }
-    );
+    if (existingPage) {
+      return NextResponse.json({
+        alreadyActivated: true,
+        artistName: existingPage.artistName,
+        publicUrl: `/${existingPage.slug}`,
+      });
+    }
+  }
+
+  if (activation.used) {
+    return NextResponse.json({ error: "Este código ya fue canjeado." }, { status: 409 });
+  }
+  if (!artistName) {
+    return NextResponse.json({ error: "Falta el nombre del artista." }, { status: 400 });
   }
 
   const slug = await uniqueSlug(artistName);
@@ -60,6 +69,7 @@ export async function POST(req: NextRequest) {
         editToken,
         artistName,
         activationCodeId: activation.id,
+        activationBatchName: activation.batchName,
         subscriptionExpiresAt: oneYearFrom(new Date()),
         contactEmail: contactEmail || null,
       },

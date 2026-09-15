@@ -29,7 +29,9 @@ export default function ActivationForm() {
         setLoading(false);
         return;
       }
-      router.push(data.editUrl);
+      // Otro vinilito del mismo álbum ya activó esta página antes: no se
+      // crea una nueva, se va directo a la que ya existe.
+      router.push(data.alreadyActivated ? data.publicUrl : data.editUrl);
     } catch {
       setError("Ocurrió un error de red. Probá de nuevo.");
       setLoading(false);

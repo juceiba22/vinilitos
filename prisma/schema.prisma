@@ -48,6 +48,12 @@ model Page {
   activationCode   ActivationCode? @relation(fields: [activationCodeId], references: [id])
   activationCodeId String?         @unique
 
+  // El código que efectivamente creó esta página. Todos los demás códigos
+  // de la misma tirada (mismo batchName — hay varios vinilitos físicos con
+  // el mismo álbum) no crean una página nueva: redirigen a esta, ya
+  // existente. Null si el código no tenía batchName (tirada suelta).
+  activationBatchName String? @unique
+
   links         Link[]
   renewalCodes  RenewalCode[]
 }

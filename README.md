@@ -45,11 +45,17 @@ consulta a la base durante el build — y en el entorno de build de Vercel
 ## Flujo de uso
 
 1. **`/`** — landing explicando el producto.
-2. **`/activar?code=VNLT-XXXXXX`** — el QR/NFC del vinilito apunta acá (con
-   el código como query param, precargado en el input). El músico completa
-   su nombre de artista y canjea el código.
-3. Al canjear, se crea una `Page` con un `slug` público (derivado del
-   nombre) y un `editToken` secreto, y redirige a
+2. **`/activar?code=VNLT-XXXXXX`** — el QR/NFC de cada vinilito físico
+   apunta acá (con el código como query param, precargado en el input). El
+   **primer** código de una tirada (`batchName`) que se canjea pide nombre
+   de artista y crea la página. Los **demás** códigos de esa misma tirada
+   — porque una tirada son varias copias físicas del mismo álbum, no
+   álbumes distintos — no vuelven a mostrar el formulario: redirigen
+   directo a la página ya creada (`Page.activationBatchName` es la
+   relación 1 tirada → 1 página). Ninguno de esos códigos "de más" entrega
+   acceso de edición — eso es solo para quien activó primero.
+3. Al canjear el primer código, se crea una `Page` con un `slug` público
+   (derivado del nombre) y un `editToken` secreto, y redirige a
    **`/editor/[slug]/[editToken]`** — esa URL es la que el músico debe
    guardar para volver a editar su página. No hay login: la URL con el
    token *es* la credencial (igual que un link de edición de Canva/Figma
