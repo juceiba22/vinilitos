@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Un código de activación va grabado en el QR/NFC de cada vinilito.
+// El músico lo canjea una única vez para crear su página.
+model ActivationCode {
+  id        String    @id @default(cuid())
+  code      String    @unique
+  batchName String? // ej: "Facundo Bronstein Vol.1 - tirada 50u"
+  used      Boolean   @default(false)
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  page      Page?
+}
+
+model Page {
+  id         String   @id @default(cuid())
+  slug       String   @unique
+  editToken  String   @unique
+  artistName String
+  albumTitle String?
+  bio        String?
+  coverImageUrl String?
+  themeColor String   @default("#1a1310")
+  published  Boolean  @default(true)
+  // Vencimiento de la suscripción anual. Se fija a la fecha de activación + 1
+  // año, y cada RenewalCode canjeado la extiende otro año. Pasada esta fecha
+  // la página pública deja de mostrar los links.
+  subscriptionExpiresAt DateTime
+  // Mail del músico para avisarle antes de que venza. Opcional: sin mail
+  // cargado no hay a quién avisar.
+  contactEmail       String?
+  lastReminderSentAt DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  activationCode   ActivationCode? @relation(fields: [activationCodeId], references: [id])
+  activationCodeId String?         @unique
+
+  links         Link[]
+  renewalCodes  RenewalCode[]
+}
+
+// Un código de renovación extiende un año más la suscripción de una página
+// ya existente. Igual que ActivationCode, se genera en lote y representa un
+// pago ya cobrado (presencial hoy; el mismo mecanismo puede dispararse desde
+// un webhook de pago online el día que exista ese canal). Se canjea desde el
+// editor de la propia página, autenticado con su editToken.
+model RenewalCode {
+  id        String    @id @default(cuid())
+  code      String    @unique
+  batchName String?
+  used      Boolean   @default(false)
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  page   Page?   @relation(fields: [pageId], references: [id])
+  pageId String?
+}
+
+model Link {
+  id           String   @id @default(cuid())
+  page         Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  pageId       String
+  url          String
+  platform     String // spotify | youtube | soundcloud | appleMusic | bandcamp | other
+  title        String?
+  thumbnailUrl String?
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+}

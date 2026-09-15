@@ -1,26 +1,44 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --vinyl-black: #17120f;
+  --vinyl-black-soft: #221a15;
+  --vinyl-cream: #f3e9d8;
+  --vinyl-cream-dim: #c9bca6;
+  --vinyl-accent: #e0763a;
+  --vinyl-accent-dim: #a85428;
+  --vinyl-line: #3a2d24;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-vinyl-black: var(--vinyl-black);
+  --color-vinyl-black-soft: var(--vinyl-black-soft);
+  --color-vinyl-cream: var(--vinyl-cream);
+  --color-vinyl-cream-dim: var(--vinyl-cream-dim);
+  --color-vinyl-accent: var(--vinyl-accent);
+  --color-vinyl-accent-dim: var(--vinyl-accent-dim);
+  --color-vinyl-line: var(--vinyl-line);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-display: var(--font-fraunces);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-display), Georgia, serif;
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
 }
