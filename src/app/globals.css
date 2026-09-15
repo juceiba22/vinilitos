@@ -42,3 +42,17 @@ body {
 .animate-spin-slow {
   animation: spin-slow 8s linear infinite;
 }
+
+.input {
+  width: 100%;
+  background: var(--vinyl-black);
+  border: 1px solid var(--vinyl-line);
+  border-radius: 0.5rem;
+  padding: 0.65rem 1rem;
+  outline: none;
+  color: var(--vinyl-cream);
+}
+
+.input:focus {
+  border-color: var(--vinyl-accent);
+}

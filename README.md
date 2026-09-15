@@ -46,14 +46,49 @@ Abrí `http://localhost:3000`.
 
 ## Códigos de activación
 
-`scripts/generate-codes.js` genera códigos únicos (`VNLT-XXXXXX`) asociados
-a un `batchName` (ej. "Facundo Bronstein Vol.1 — tirada 50u"), pensado para
-correr una vez por tirada de vinilitos antes de mandarla a imprimir/grabar
-en los NFC. Cada código se puede canjear una sola vez.
+Cada código único (`VNLT-XXXXXX`) se genera en lote, asociado a un
+`batchName` (ej. "Facundo Bronstein Vol.1 — tirada 50u"), antes de mandar
+esa tirada a producir/grabar en los NFC. Cada código se canjea una sola vez.
 
-En producción esto se reemplaza por un panel admin simple (no incluido en
-este MVP) que liste tiradas, genere PDFs de QR para imprimir, y programe la
-escritura de las tags NFC.
+Dos formas de generarlos, ambas escriben lo mismo en la base:
+
+- **Panel admin** (`/admin/codes`, ver sección siguiente) — pensado para el
+  uso real del día a día, sin tocar código ni terminal.
+- **`npm run codes:generate "Nombre de la tirada" 10`**
+  ([scripts/generate-codes.js](scripts/generate-codes.js)) — útil para
+  generar en bulk desde CI/un script, o si preferís la terminal.
+
+## Panel admin
+
+`/admin` (protegido con una contraseña compartida en `ADMIN_PASSWORD`) es
+donde alguien de Vinilitos, sin tocar código, hace la operación del día a
+día:
+
+- **`/admin/codes`**: generar un lote nuevo de códigos de activación (nombre
+  de tirada + cantidad) y ver las tiradas existentes con cuántos códigos
+  están usados vs. pendientes. Al generar, muestra la lista de códigos para
+  copiar y mandar a grabar en los NFC / imprimir en los QR.
+- **`/admin/renewals`**: lo mismo pero para códigos de renovación (ver
+  sección de vencimiento más abajo) — se generan cuando un músico paga la
+  renovación presencialmente.
+- **`/admin/pages`**: todas las páginas activadas, ordenadas por
+  vencimiento, con su estado (activa / vence pronto / vencida), mail de
+  contacto, y links directos a la página pública y al editor de cada una
+  (el link al editor es sensible — solo para ayudar a un músico que perdió
+  el suyo).
+
+**Cómo funciona el login**: una sola contraseña compartida (`ADMIN_PASSWORD`
+en `.env`), sin cuentas individuales — alcanza para un equipo chico. Al
+loguearse, [`/api/admin/login`](src/app/api/admin/login/route.ts) firma una
+cookie de sesión (HMAC con la propia contraseña como clave, sin guardar
+nada en la base) válida 12hs. [`src/proxy.ts`](src/proxy.ts) — el
+`middleware.ts` de versiones anteriores de Next.js, renombrado a `proxy.ts`
+desde Next 16 — protege todo `/admin/*` y `/api/admin/*`, redirigiendo a
+`/admin/login` sin sesión válida. Si cambiás `ADMIN_PASSWORD`, todas las
+sesiones firmadas con la contraseña anterior quedan inválidas solas.
+
+Los scripts de terminal (`codes:generate`, `codes:renew`) siguen andando
+igual — el panel no los reemplaza, les da una alternativa sin terminal.
 
 ## Vencimiento y renovación anual
 
@@ -156,8 +191,11 @@ arriba.
   (`provider = "postgresql"`) y `DATABASE_URL`.
 - **Dominio propio / subdominios** (`facubronstein.vinilitos.play`) en vez
   de `/[slug]`.
-- **Panel admin** para Vinilitos: ver todas las páginas creadas, tiradas de
-  códigos, y qué páginas están por vencer o ya vencieron.
+- **Cuentas individuales para el equipo de Vinilitos** (con roles/permisos
+  distintos) si en algún momento son varias personas — hoy alcanza con la
+  contraseña compartida del panel admin.
+- **Generar PDFs de QR para imprimir** directamente desde `/admin/codes` en
+  vez de solo la lista de códigos en texto.
 - **Analytics** por página (clicks por link) — útil para que el músico vea
   qué plataforma le funciona mejor.
 - **Editor de imagen de portada** (subida propia en vez de solo URL / auto

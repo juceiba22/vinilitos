@@ -398,21 +398,6 @@ export default function EditorClient({
       >
         {saving ? "Guardando..." : "Guardar cambios"}
       </button>
-
-      <style jsx global>{`
-        .input {
-          width: 100%;
-          background: var(--vinyl-black);
-          border: 1px solid var(--vinyl-line);
-          border-radius: 0.5rem;
-          padding: 0.65rem 1rem;
-          outline: none;
-          color: var(--vinyl-cream);
-        }
-        .input:focus {
-          border-color: var(--vinyl-accent);
-        }
-      `}</style>
     </main>
   );
 }
