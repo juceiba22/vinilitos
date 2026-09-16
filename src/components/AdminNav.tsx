@@ -1,9 +1,8 @@
 import Link from "next/link";
 
 const ITEMS = [
-  { href: "/admin/codes", label: "Códigos de activación" },
-  { href: "/admin/renewals", label: "Códigos de renovación" },
   { href: "/admin/pages", label: "Páginas" },
+  { href: "/admin/renewals", label: "Códigos de renovación" },
 ];
 
 export default function AdminNav({ current }: { current: string }) {

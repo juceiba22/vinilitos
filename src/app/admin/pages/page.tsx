@@ -1,15 +1,17 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import AdminNav from "@/components/AdminNav";
+import NewArtistPageForm from "./NewArtistPageForm";
 import { daysUntil, isExpired } from "@/lib/subscription";
 
-// Muestra datos en vivo (vencimientos) — nunca debe quedar cacheada como
-// página estática, ni intentar consultar la base en build time.
+// Muestra datos en vivo (vencimientos, borradores) — nunca debe quedar
+// cacheada como página estática, ni intentar consultar la base en build time.
 export const dynamic = "force-dynamic";
 
 export default async function AdminPagesPage() {
   const pages = await prisma.page.findMany({
-    orderBy: { subscriptionExpiresAt: "asc" },
+    orderBy: { createdAt: "desc" },
+    include: { links: { include: { code: true } } },
   });
 
   return (
@@ -17,13 +19,18 @@ export default async function AdminPagesPage() {
       <AdminNav current="/admin/pages" />
       <h1 className="font-display text-3xl mb-6">Páginas</h1>
       <p className="text-vinyl-cream-dim text-sm mb-6">
-        Todas las páginas activadas, ordenadas por vencimiento. El link
-        &quot;editor&quot; es privado — úsalo solo para ayudar a un músico
-        que perdió su link de edición.
+        Creá una página nueva por cada artista, cargale los links que te
+        encargó y generá el código QR/NFC de cada vinilito antes de
+        publicarla.
       </p>
+
+      <div className="mb-10">
+        <NewArtistPageForm />
+      </div>
+
       {pages.length === 0 ? (
         <p className="text-vinyl-cream-dim text-sm">
-          Todavía no se activó ninguna página.
+          Todavía no creaste ninguna página.
         </p>
       ) : (
         <div className="overflow-x-auto">
@@ -31,25 +38,25 @@ export default async function AdminPagesPage() {
             <thead>
               <tr className="text-left text-vinyl-cream-dim border-b border-vinyl-line">
                 <th className="py-2 pr-4">Artista</th>
-                <th className="py-2 pr-4">Mail</th>
-                <th className="py-2 pr-4">Vence</th>
                 <th className="py-2 pr-4">Estado</th>
-                <th className="py-2">Links</th>
+                <th className="py-2 pr-4">Links / códigos</th>
+                <th className="py-2 pr-4">Vence</th>
+                <th className="py-2">Enlaces</th>
               </tr>
             </thead>
             <tbody>
               {pages.map((p) => {
-                const expired = isExpired(p.subscriptionExpiresAt);
+                const withCode = p.links.filter((l) => l.code).length;
+                const expired =
+                  p.published && isExpired(p.subscriptionExpiresAt);
                 const daysLeft = daysUntil(p.subscriptionExpiresAt);
                 return (
                   <tr key={p.id} className="border-b border-vinyl-line/50">
                     <td className="py-2 pr-4">{p.artistName}</td>
-                    <td className="py-2 pr-4">{p.contactEmail ?? "—"}</td>
                     <td className="py-2 pr-4">
-                      {p.subscriptionExpiresAt.toLocaleDateString("es-AR")}
-                    </td>
-                    <td className="py-2 pr-4">
-                      {expired ? (
+                      {!p.published ? (
+                        <span className="text-vinyl-cream-dim">Borrador</span>
+                      ) : expired ? (
                         <span className="text-vinyl-accent font-semibold">
                           Vencida
                         </span>
@@ -61,22 +68,40 @@ export default async function AdminPagesPage() {
                         <span className="text-vinyl-cream-dim">Activa</span>
                       )}
                     </td>
+                    <td className="py-2 pr-4">
+                      {p.links.length} links · {withCode} con código
+                    </td>
+                    <td className="py-2 pr-4">
+                      {p.published
+                        ? p.subscriptionExpiresAt.toLocaleDateString("es-AR")
+                        : "—"}
+                    </td>
                     <td className="py-2">
                       <div className="flex gap-3">
                         <Link
-                          href={`/${p.slug}`}
-                          target="_blank"
-                          className="underline text-vinyl-cream-dim hover:text-vinyl-cream"
+                          href={`/admin/pages/${p.id}/edit`}
+                          className="underline text-vinyl-accent"
                         >
-                          pública
+                          Armar
                         </Link>
-                        <Link
-                          href={`/editor/${p.slug}/${p.editToken}`}
-                          target="_blank"
-                          className="underline text-vinyl-cream-dim hover:text-vinyl-cream"
-                        >
-                          editor
-                        </Link>
+                        {p.published && (
+                          <>
+                            <Link
+                              href={`/${p.slug}`}
+                              target="_blank"
+                              className="underline text-vinyl-cream-dim hover:text-vinyl-cream"
+                            >
+                              pública
+                            </Link>
+                            <Link
+                              href={`/editor/${p.slug}/${p.editToken}`}
+                              target="_blank"
+                              className="underline text-vinyl-cream-dim hover:text-vinyl-cream"
+                            >
+                              editor
+                            </Link>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>

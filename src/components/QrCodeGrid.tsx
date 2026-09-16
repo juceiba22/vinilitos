@@ -1,7 +1,7 @@
 "use client";
 
 import { QRCodeSVG } from "qrcode.react";
-import { buildActivationUrl } from "@/lib/activationUrl";
+import { buildTrackUrl } from "@/lib/codeUrl";
 
 interface QrCodeGridProps {
   codes: string[];
@@ -14,7 +14,7 @@ export default function QrCodeGrid({ codes, title }: QrCodeGridProps) {
       <div className="flex items-center justify-between mb-3 print:hidden">
         <p className="text-sm text-vinyl-cream-dim">
           {codes.length} códigos — cada QR apunta directo a{" "}
-          <code className="text-vinyl-cream">/activar?code=...</code>, listo
+          <code className="text-vinyl-cream">/t/&lt;codigo&gt;</code>, listo
           para grabar en el NFC o imprimir junto al vinilito.
         </p>
         <button
@@ -32,7 +32,7 @@ export default function QrCodeGrid({ codes, title }: QrCodeGridProps) {
             key={code}
             className="flex flex-col items-center gap-1 p-2 break-inside-avoid"
           >
-            <QRCodeSVG value={buildActivationUrl(code)} size={120} />
+            <QRCodeSVG value={buildTrackUrl(code)} size={120} />
             <span className="text-[11px] font-mono text-black">{code}</span>
           </div>
         ))}

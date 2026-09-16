@@ -7,36 +7,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Un código de activación va grabado en el QR/NFC de cada vinilito.
-// El músico lo canjea una única vez para crear su página.
-model ActivationCode {
-  id        String    @id @default(cuid())
-  code      String    @unique
-  batchName String? // ej: "Facundo Bronstein Vol.1 - tirada 50u"
-  used      Boolean   @default(false)
-  usedAt    DateTime?
-  // Marcado desde el panel admin cuando Vinilitos ya grabó este código en el
-  // NFC (o lo imprimió como QR) del vinilito físico correspondiente.
-  // Independiente de `used`: se puede grabar antes de que el músico active.
-  nfcWritten   Boolean   @default(false)
-  nfcWrittenAt DateTime?
-  createdAt DateTime  @default(now())
-  page      Page?
-}
-
 model Page {
   id         String   @id @default(cuid())
   slug       String   @unique
-  editToken  String   @unique
+  // Código secreto que el admin genera al publicar la página y le entrega al
+  // artista para que pueda editarla después (sumar miembros, fotos, etc.).
+  // Null mientras la página está en borrador y todavía no se publicó.
+  editToken  String?  @unique
   artistName String
   albumTitle String?
   bio        String?
   coverImageUrl String?
   themeColor String   @default("#1a1310")
-  published  Boolean  @default(true)
-  // Vencimiento de la suscripción anual. Se fija a la fecha de activación + 1
-  // año, y cada RenewalCode canjeado la extiende otro año. Pasada esta fecha
-  // la página pública deja de mostrar los links.
+  // El admin arma la página (carga links, genera códigos) en borrador antes
+  // de publicarla. Solo una página publicada es visible en /[slug].
+  published  Boolean  @default(false)
+  // Vencimiento de la suscripción anual. Se fija a la fecha de publicación +
+  // 1 año, y cada RenewalCode canjeado la extiende otro año. Pasada esta
+  // fecha la página pública deja de mostrar los links.
   subscriptionExpiresAt DateTime
   // Mail del músico para avisarle antes de que venza. Opcional: sin mail
   // cargado no hay a quién avisar.
@@ -45,24 +33,15 @@ model Page {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  activationCode   ActivationCode? @relation(fields: [activationCodeId], references: [id])
-  activationCodeId String?         @unique
-
-  // El código que efectivamente creó esta página. Todos los demás códigos
-  // de la misma tirada (mismo batchName — hay varios vinilitos físicos con
-  // el mismo álbum) no crean una página nueva: redirigen a esta, ya
-  // existente. Null si el código no tenía batchName (tirada suelta).
-  activationBatchName String? @unique
-
   links         Link[]
   renewalCodes  RenewalCode[]
 }
 
 // Un código de renovación extiende un año más la suscripción de una página
-// ya existente. Igual que ActivationCode, se genera en lote y representa un
-// pago ya cobrado (presencial hoy; el mismo mecanismo puede dispararse desde
-// un webhook de pago online el día que exista ese canal). Se canjea desde el
-// editor de la propia página, autenticado con su editToken.
+// ya existente. Se genera en lote y representa un pago ya cobrado
+// (presencial hoy; el mismo mecanismo puede dispararse desde un webhook de
+// pago online el día que exista ese canal). Se canjea desde el editor de la
+// propia página, autenticado con su editToken.
 model RenewalCode {
   id        String    @id @default(cuid())
   code      String    @unique
@@ -84,5 +63,26 @@ model Link {
   title        String?
   thumbnailUrl String?
   order        Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  code LinkCode?
+}
+
+// El código QR/NFC grabado en el vinilito físico correspondiente a este
+// link puntual (un tema o álbum), en relación 1:1. Escanearlo lleva a
+// /t/[code], que muestra la portada/título de este link y un botón para
+// abrirlo.
+model LinkCode {
+  id     String @id @default(cuid())
+  code   String @unique
+  link   Link   @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  linkId String @unique
+
+  // Marcado desde el panel admin cuando Vinilitos ya grabó este código en el
+  // NFC del vinilito físico correspondiente.
+  nfcWritten   Boolean   @default(false)
+  nfcWrittenAt DateTime?
+
+  scannedCount Int      @default(0)
   createdAt    DateTime @default(now())
 }

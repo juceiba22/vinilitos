@@ -26,7 +26,7 @@ export default function LoginForm() {
         setLoading(false);
         return;
       }
-      router.push(searchParams.get("next") || "/admin/codes");
+      router.push(searchParams.get("next") || "/admin/pages");
       router.refresh();
     } catch {
       setError("Error de red.");

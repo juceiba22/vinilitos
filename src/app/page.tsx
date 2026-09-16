@@ -1,4 +1,3 @@
-import Link from "next/link";
 import VinylDisc from "@/components/VinylDisc";
 
 export default function Home() {
@@ -13,24 +12,18 @@ export default function Home() {
             Un solo link para todos tus links.
           </h1>
           <p className="text-vinyl-cream-dim text-lg mb-8 max-w-md mx-auto md:mx-0">
-            Activá tu vinilito y creá en minutos tu propia página con Spotify,
-            YouTube y todas las plataformas donde suena tu música. Sin pagar
-            Carrd, sin complicarte.
+            Encargá tus vinilitos con Spotify, YouTube y todas las
+            plataformas donde suena tu música. Nosotros armamos tu página y
+            grabamos el NFC de cada uno.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
-            <Link
-              href="/activar"
-              className="bg-vinyl-accent hover:bg-vinyl-accent-dim transition-colors text-vinyl-black font-semibold px-6 py-3 rounded-full text-center"
-            >
-              Activar mi vinilito
-            </Link>
             <a
               href="https://www.instagram.com/vinilitos.play/"
               target="_blank"
               rel="noreferrer"
-              className="border border-vinyl-line hover:border-vinyl-accent transition-colors px-6 py-3 rounded-full text-center"
+              className="bg-vinyl-accent hover:bg-vinyl-accent-dim transition-colors text-vinyl-black font-semibold px-6 py-3 rounded-full text-center"
             >
-              Conocer Vinilitos
+              Encargar mis vinilitos
             </a>
           </div>
         </div>
@@ -45,18 +38,18 @@ export default function Home() {
           {[
             {
               step: "1",
-              title: "Comprás tus vinilitos",
-              body: "Cada vinilito físico trae un código NFC/QR único de activación, listo para revender junto a tu música.",
+              title: "Nos encargás tus vinilitos",
+              body: "Nos pasás tus links de Spotify, YouTube, SoundCloud o donde suene tu música, uno por cada vinilito.",
             },
             {
               step: "2",
-              title: "Activás tu código",
-              body: "Escaneás o ingresás el código, ponés el nombre de tu proyecto y creamos tu página al instante.",
+              title: "Armamos tu página",
+              body: "Cargamos cada tema con su portada y título, y grabamos un código NFC/QR único para cada vinilito físico.",
             },
             {
               step: "3",
-              title: "Cargás tus links",
-              body: "Pegás tus links de Spotify, YouTube, SoundCloud, Apple Music o donde sea. Traemos portada y título solos.",
+              title: "Escaneás y sonás",
+              body: "Cada vinilito lleva directo a su tema, y tenés tu propia página con todos tus links para compartir.",
             },
           ].map((item) => (
             <div key={item.step} className="text-center md:text-left">
@@ -78,14 +71,16 @@ export default function Home() {
         </h2>
         <p className="text-vinyl-cream-dim mb-8">
           Tu página propia, sin límite de links, sin marca de agua de
-          terceros. Incluida al activar tus vinilitos.
+          terceros. Incluida al encargar tus vinilitos.
         </p>
-        <Link
-          href="/activar"
+        <a
+          href="https://www.instagram.com/vinilitos.play/"
+          target="_blank"
+          rel="noreferrer"
           className="inline-block bg-vinyl-accent hover:bg-vinyl-accent-dim transition-colors text-vinyl-black font-semibold px-8 py-3 rounded-full"
         >
-          Activar ahora
-        </Link>
+          Encargar ahora
+        </a>
       </section>
 
       <footer className="mt-auto py-8 text-center text-vinyl-cream-dim text-xs border-t border-vinyl-line">
