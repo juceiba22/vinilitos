@@ -51,14 +51,14 @@ export default async function PublicArtistPage({
           <img
             src={page.coverImageUrl}
             alt=""
-            className="absolute inset-0 w-full h-full object-cover scale-125 blur-3xl saturate-150 opacity-70"
+            className="absolute inset-0 w-full h-full object-cover scale-110 blur-md saturate-125 opacity-90"
           />
           <div
             className="absolute inset-0"
             style={{
               background: palette
-                ? "linear-gradient(180deg, color-mix(in oklab, var(--vinyl-black) 45%, transparent) 0%, color-mix(in oklab, var(--vinyl-black) 75%, transparent) 55%, var(--vinyl-black) 100%)"
-                : `linear-gradient(180deg, ${page.themeColor}73 0%, ${page.themeColor}bf 55%, ${page.themeColor} 100%)`,
+                ? "linear-gradient(180deg, color-mix(in oklab, var(--vinyl-black) 30%, transparent) 0%, color-mix(in oklab, var(--vinyl-black) 55%, transparent) 55%, color-mix(in oklab, var(--vinyl-black) 85%, transparent) 100%)"
+                : `linear-gradient(180deg, ${page.themeColor}4d 0%, ${page.themeColor}8c 55%, ${page.themeColor}d9 100%)`,
             }}
           />
         </div>
