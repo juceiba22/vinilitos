@@ -56,3 +56,21 @@ body {
 .input:focus {
   border-color: var(--vinyl-accent);
 }
+
+/* Identidad del catálogo impreso, usada solo en la landing (.catalog). */
+.catalog {
+  --cat-yellow: #f4b11e;
+  --cat-yellow-light: #ffde59;
+  --cat-black: #070707;
+  --cat-dark: #141616;
+  font-family: var(--font-catalog-sans), Arial, Helvetica, sans-serif;
+  background: var(--cat-black);
+}
+
+.catalog-display {
+  font-family: var(--font-catalog-display), Arial Black, sans-serif;
+  font-weight: 900;
+  font-stretch: 125%;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+}
