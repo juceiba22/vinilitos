@@ -8,33 +8,71 @@ datasource db {
 }
 
 model Page {
-  id         String   @id @default(cuid())
-  slug       String   @unique
+  id                    String    @id @default(cuid())
+  slug                  String    @unique
   // Código secreto que el admin genera al publicar la página y le entrega al
   // artista para que pueda editarla después (sumar miembros, fotos, etc.).
   // Null mientras la página está en borrador y todavía no se publicó.
-  editToken  String?  @unique
-  artistName String
-  albumTitle String?
-  bio        String?
-  coverImageUrl String?
-  themeColor String   @default("#1a1310")
+  editToken             String?   @unique
+  artistName            String
+  albumTitle            String?
+  bio                   String?
+  coverImageUrl         String?
+  themeColor            String    @default("#1a1310")
+  // "album" (varias canciones, cada una con su letra) o "single" (una sola
+  // canción). Define cómo se cargan las letras en el admin.
+  releaseType           String    @default("album")
+  // Solapa "Info" del admin: créditos y datos del disco.
+  recordedAt            String?
+  thanks                String?
+  // Lista de participantes: [{ "role": "Guitarras", "names": "Juan, Ana" }]
+  credits               Json?
   // El admin arma la página (carga links, genera códigos) en borrador antes
   // de publicarla. Solo una página publicada es visible en /[slug].
-  published  Boolean  @default(false)
+  published             Boolean   @default(false)
   // Vencimiento de la suscripción anual. Se fija a la fecha de publicación +
   // 1 año, y cada RenewalCode canjeado la extiende otro año. Pasada esta
   // fecha la página pública deja de mostrar los links.
   subscriptionExpiresAt DateTime
   // Mail del músico para avisarle antes de que venza. Opcional: sin mail
   // cargado no hay a quién avisar.
-  contactEmail       String?
-  lastReminderSentAt DateTime?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  contactEmail          String?
+  lastReminderSentAt    DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
-  links         Link[]
-  renewalCodes  RenewalCode[]
+  links        Link[]
+  renewalCodes RenewalCode[]
+  tracks       Track[]
+  photos       Photo[]
+}
+
+// Canción del disco con su letra. Un single tiene una sola.
+model Track {
+  id        String   @id @default(cuid())
+  page      Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  pageId    String
+  title     String
+  lyrics    String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([pageId])
+}
+
+// Foto de la solapa "Backstage". El archivo vive en Cloudflare R2 (key) y se
+// sirve desde su URL pública (url).
+model Photo {
+  id        String   @id @default(cuid())
+  page      Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  pageId    String
+  key       String   @unique
+  url       String
+  caption   String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([pageId])
 }
 
 // Un código de renovación extiende un año más la suscripción de una página

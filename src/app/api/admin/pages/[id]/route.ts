@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+
+const MAX_CREDITS = 80;
 
 export async function PATCH(
   req: NextRequest,
@@ -23,6 +26,9 @@ export async function PATCH(
     coverImageUrl?: string | null;
     themeColor?: string;
     contactEmail?: string | null;
+    recordedAt?: string | null;
+    thanks?: string | null;
+    credits?: Prisma.InputJsonValue | typeof Prisma.DbNull;
   } = {};
 
   if (typeof body.artistName === "string" && body.artistName.trim()) {
@@ -49,6 +55,28 @@ export async function PATCH(
       return NextResponse.json({ error: "El mail no es válido." }, { status: 400 });
     }
     data.contactEmail = contactEmail || null;
+  }
+
+  if (typeof body.recordedAt === "string") {
+    data.recordedAt = body.recordedAt.trim() || null;
+  }
+  if (typeof body.thanks === "string") {
+    data.thanks = body.thanks.trim() || null;
+  }
+  if (body.credits !== undefined) {
+    if (!Array.isArray(body.credits) || body.credits.length > MAX_CREDITS) {
+      return NextResponse.json({ error: "Créditos inválidos." }, { status: 400 });
+    }
+    const credits = body.credits
+      .map((c: unknown) => {
+        const credit = c as { role?: unknown; names?: unknown } | null;
+        return {
+          role: typeof credit?.role === "string" ? credit.role.trim() : "",
+          names: typeof credit?.names === "string" ? credit.names.trim() : "",
+        };
+      })
+      .filter((c: { role: string; names: string }) => c.role || c.names);
+    data.credits = credits.length ? credits : Prisma.DbNull;
   }
 
   const updated = await prisma.page.update({ where: { id }, data });

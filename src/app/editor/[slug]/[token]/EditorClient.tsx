@@ -285,7 +285,7 @@ export default function EditorClient({
             }
           />
         </Field>
-        <Field label="Color de fondo">
+        <Field label="Color de fondo (solo se usa si la página no tiene arte de tapa: con tapa, el fondo y los colores salen de la imagen)">
           <div className="flex gap-2">
             {THEME_PRESETS.map((c) => (
               <button

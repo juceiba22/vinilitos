@@ -6,6 +6,10 @@ import { QRCodeSVG } from "qrcode.react";
 import VinylDisc from "@/components/VinylDisc";
 import QrCodeGrid from "@/components/QrCodeGrid";
 import { buildTrackUrl } from "@/lib/codeUrl";
+import type { Credit } from "@/lib/credits";
+import LyricsTab, { type ReleaseType, type TrackItem } from "./LyricsTab";
+import InfoTab from "./InfoTab";
+import BackstageTab, { type PhotoItem } from "./BackstageTab";
 
 interface LinkCodeItem {
   code: string;
@@ -31,6 +35,25 @@ interface PageFields {
   links: LinkItem[];
 }
 
+export interface ExtraFields {
+  releaseType: ReleaseType;
+  tracks: TrackItem[];
+  recordedAt: string;
+  thanks: string;
+  credits: Credit[];
+  photos: PhotoItem[];
+  r2Configured: boolean;
+}
+
+type Tab = "page" | "lyrics" | "info" | "backstage";
+
+const TABS: { id: Tab; label: string }[] = [
+  { id: "page", label: "Página" },
+  { id: "lyrics", label: "Letras" },
+  { id: "info", label: "Info" },
+  { id: "backstage", label: "Backstage" },
+];
+
 const PLATFORM_LABEL: Record<string, string> = {
   spotify: "Spotify",
   youtube: "YouTube",
@@ -48,13 +71,16 @@ export default function PageBuilderClient({
   editToken: initialEditToken,
   slug,
   initial,
+  extra,
 }: {
   pageId: string;
   published: boolean;
   editToken: string | null;
   slug: string;
   initial: PageFields;
+  extra: ExtraFields;
 }) {
+  const [tab, setTab] = useState<Tab>("page");
   const [data, setData] = useState<PageFields>(initial);
   const [newUrl, setNewUrl] = useState("");
   const [addingLink, setAddingLink] = useState(false);
@@ -241,6 +267,55 @@ export default function PageBuilderClient({
       </p>
       <h1 className="font-display text-3xl mb-6">{data.artistName}</h1>
 
+      <nav
+        role="tablist"
+        className="flex gap-1 border-b border-vinyl-line mb-8 overflow-x-auto print:hidden"
+      >
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            aria-selected={tab === t.id}
+            onClick={() => setTab(t.id)}
+            className={`px-4 py-2 text-sm -mb-px border-b-2 whitespace-nowrap transition-colors ${
+              tab === t.id
+                ? "border-vinyl-accent text-vinyl-cream"
+                : "border-transparent text-vinyl-cream-dim hover:text-vinyl-cream"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </nav>
+
+      {/* Las solapas se ocultan en vez de desmontarse para no perder lo que
+          se estaba escribiendo al cambiar de una a otra. */}
+      <div hidden={tab !== "lyrics"}>
+        <LyricsTab
+          pageId={pageId}
+          albumTitle={data.albumTitle}
+          initialReleaseType={extra.releaseType}
+          initialTracks={extra.tracks}
+        />
+      </div>
+      <div hidden={tab !== "info"}>
+        <InfoTab
+          pageId={pageId}
+          initialRecordedAt={extra.recordedAt}
+          initialThanks={extra.thanks}
+          initialCredits={extra.credits}
+        />
+      </div>
+      <div hidden={tab !== "backstage"}>
+        <BackstageTab
+          pageId={pageId}
+          r2Configured={extra.r2Configured}
+          initialPhotos={extra.photos}
+        />
+      </div>
+
+      <div hidden={tab !== "page"}>
       <div className="flex justify-center mb-8">
         <VinylDisc
           label={data.albumTitle || data.artistName}
@@ -280,7 +355,7 @@ export default function PageBuilderClient({
             onChange={(e) => setData((d) => ({ ...d, contactEmail: e.target.value }))}
           />
         </Field>
-        <Field label="Color de fondo">
+        <Field label="Color de fondo (solo se usa si la página no tiene arte de tapa: con tapa, el fondo y los colores salen de la imagen)">
           <div className="flex gap-2">
             {THEME_PRESETS.map((c) => (
               <button
@@ -428,6 +503,7 @@ export default function PageBuilderClient({
           </section>
         );
       })()}
+      </div>
 
       {error && <p className="text-vinyl-accent text-sm mb-4">{error}</p>}
       {message && <p className="text-sm mb-4">{message}</p>}

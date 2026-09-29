@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import VinylDisc from "@/components/VinylDisc";
 import { isExpired } from "@/lib/subscription";
+import { getCoverPalette, paletteToCssVars } from "@/lib/coverPalette";
 
 const PLATFORM_LABEL: Record<string, string> = {
   spotify: "Escuchar en Spotify",
@@ -30,11 +31,39 @@ export default async function PublicArtistPage({
 
   const expired = isExpired(page.subscriptionExpiresAt);
 
+  // La estética de la página sale del arte de tapa: fondo con la tapa
+  // desenfocada y paleta de colores derivada de la imagen. Sin tapa (o si
+  // no se pudo analizar) se usa el color de fondo elegido en el admin.
+  const palette = await getCoverPalette(page.coverImageUrl);
+  const themeVars = palette ? paletteToCssVars(palette) : {};
+
   return (
     <main
-      className="flex-1 flex flex-col items-center px-6 py-16"
-      style={{ background: page.themeColor }}
+      className="relative isolate flex-1 flex flex-col items-center px-6 py-16 overflow-hidden"
+      style={{
+        ...themeVars,
+        background: palette ? "var(--vinyl-black)" : page.themeColor,
+      } as React.CSSProperties}
     >
+      {page.coverImageUrl && (
+        <div aria-hidden className="fixed inset-0 -z-10 overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={page.coverImageUrl}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover scale-125 blur-3xl saturate-150 opacity-70"
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background: palette
+                ? "linear-gradient(180deg, color-mix(in oklab, var(--vinyl-black) 45%, transparent) 0%, color-mix(in oklab, var(--vinyl-black) 75%, transparent) 55%, var(--vinyl-black) 100%)"
+                : `linear-gradient(180deg, ${page.themeColor}73 0%, ${page.themeColor}bf 55%, ${page.themeColor} 100%)`,
+            }}
+          />
+        </div>
+      )}
+
       <div className="w-full max-w-md flex flex-col items-center">
         <VinylDisc
           coverImageUrl={page.coverImageUrl}
@@ -57,7 +86,7 @@ export default async function PublicArtistPage({
         )}
 
         {expired ? (
-          <div className="w-full mt-8 bg-vinyl-black-soft/80 border border-vinyl-line rounded-xl p-6 text-center">
+          <div className="w-full mt-8 bg-vinyl-black-soft/70 backdrop-blur-md border border-vinyl-line rounded-xl p-6 text-center">
             <p className="text-vinyl-accent text-xs uppercase tracking-wide mb-2">
               Suscripción vencida
             </p>
@@ -74,7 +103,7 @@ export default async function PublicArtistPage({
                 href={link.url}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-3 bg-vinyl-black-soft/80 hover:bg-vinyl-black-soft border border-vinyl-line hover:border-vinyl-accent transition-colors rounded-xl p-3"
+                className="flex items-center gap-3 bg-vinyl-black-soft/70 hover:bg-vinyl-black-soft backdrop-blur-md border border-vinyl-line hover:border-vinyl-accent transition-colors rounded-xl p-3"
               >
                 {link.thumbnailUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
