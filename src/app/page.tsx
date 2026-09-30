@@ -100,7 +100,6 @@ const WORKS = [
   { src: "/landing/trabajo-oktubre.webp", alt: "Vinilito de Oktubre" },
   { src: "/landing/trabajo-color-blue.webp", alt: "Vinilitos de Color Blue" },
   { src: "/landing/trabajo-retrato.webp", alt: "Vinilito con tapa de retrato y su caja" },
-  { src: "/landing/trabajo-contratapas.webp", alt: "Contratapas de Facu Bronstein Vol. 1 y Vol. 2" },
 ];
 
 export default function Home() {
@@ -124,40 +123,39 @@ export default function Home() {
             Trabajos
           </a>
         </nav>
-        <div className="max-w-4xl mx-auto px-6 pt-6">
+        {/* En celular el logo y "Catálogo" van apilados, como en el PDF; en
+            pantallas anchas comparten fila para no dejar tanto negro arriba. */}
+        <div className="max-w-6xl mx-auto px-6 pt-6 pb-10 md:pb-14 grid md:grid-cols-[1.25fr_1fr] md:items-end gap-8 md:gap-10">
           <Image
             src="/landing/logo-etiqueta.webp"
             alt="Vinilitos — Easy Play"
             width={900}
             height={457}
             priority
-            className="w-full h-auto"
+            className="w-full max-w-3xl mx-auto h-auto"
           />
+          <h1 className="catalog-display text-right text-[11vw] sm:text-7xl md:text-[4.6vw] xl:text-6xl leading-none md:pb-6">
+            Catálogo
+          </h1>
         </div>
       </header>
 
-      <section className="bg-(--cat-black) py-10 md:py-14">
-        <h1 className="catalog-display text-right max-w-6xl mx-auto px-6 text-[11vw] sm:text-7xl md:text-8xl leading-none">
-          Catálogo
-        </h1>
-      </section>
-
       <section className="grid md:grid-cols-[1.4fr_1fr]">
-        <div className="relative aspect-square md:aspect-auto md:min-h-[520px]">
+        <div className="relative aspect-square md:aspect-auto md:h-[560px] lg:h-[620px]">
           <Image
             src="/landing/hero.webp"
             alt="Vinilitos de Facu Bronstein Vol. 1 y Vol. 2 con sus discos y QR"
             fill
             priority
             sizes="(min-width: 768px) 58vw, 100vw"
-            className="object-cover"
+            className="object-cover object-[50%_60%]"
           />
         </div>
-        <div className="bg-(--cat-yellow) text-(--cat-black) flex flex-col justify-end gap-8 p-8 md:p-12">
-          <p className="text-3xl md:text-4xl leading-tight">
+        <div className="bg-(--cat-yellow) text-(--cat-black) flex flex-col justify-end gap-8 p-8 md:p-12 lg:p-16">
+          <p className="text-3xl md:text-4xl lg:text-5xl leading-tight max-w-md">
             Merchandising físico e interactivo para tu Banda
           </p>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 max-w-sm">
             <a
               href={WHATSAPP_URL}
               target="_blank"
@@ -348,18 +346,18 @@ export default function Home() {
       <section id="trabajos" className="bg-(--cat-dark) scroll-mt-4">
         <SectionBand title="Algunos trabajos" />
         <div className="max-w-6xl mx-auto px-6 py-14 md:py-20">
-          <div className="relative aspect-square sm:aspect-[16/9] mb-4 overflow-hidden">
-            <Image
-              src="/landing/trabajos-mesa.webp"
-              alt="Varios vinilitos de distintas bandas sobre una mesa"
-              fill
-              sizes="(min-width: 1152px) 1104px, 100vw"
-              className="object-cover"
-            />
-          </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="relative col-span-2 md:row-span-2 aspect-square overflow-hidden group">
+              <Image
+                src="/landing/trabajos-mesa.webp"
+                alt="Varios vinilitos de distintas bandas sobre una mesa"
+                fill
+                sizes="(min-width: 1152px) 736px, (min-width: 768px) 66vw, 100vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+            </div>
             {WORKS.map((w) => (
-              <div key={w.src} className="relative aspect-square overflow-hidden group">
+              <div key={w.src} className="relative aspect-square max-md:last:col-span-2 max-md:last:aspect-[2/1] overflow-hidden group">
                 <Image
                   src={w.src}
                   alt={w.alt}
