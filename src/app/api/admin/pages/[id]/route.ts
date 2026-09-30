@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { deleteObject, isR2Configured } from "@/lib/r2";
 
 const MAX_CREDITS = 80;
 
@@ -82,4 +83,35 @@ export async function PATCH(
   const updated = await prisma.page.update({ where: { id }, data });
 
   return NextResponse.json({ ok: true, page: updated });
+}
+
+// Elimina la página con todo lo que cuelga de ella (links, códigos QR/NFC,
+// canciones, fotos). Los códigos de renovación ya canjeados se conservan
+// como usados, pero desvinculados de la página.
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+
+  const page = await prisma.page.findUnique({
+    where: { id },
+    include: { photos: { select: { key: true } } },
+  });
+  if (!page) {
+    return NextResponse.json({ error: "Página no encontrada." }, { status: 404 });
+  }
+
+  await prisma.$transaction([
+    prisma.renewalCode.updateMany({ where: { pageId: id }, data: { pageId: null } }),
+    prisma.page.delete({ where: { id } }),
+  ]);
+
+  // Las fotos de Backstage se borran de R2 después de la base: si alguna
+  // falla queda un archivo huérfano en el bucket, pero la página ya no existe.
+  if (page.photos.length > 0 && isR2Configured()) {
+    await Promise.allSettled(page.photos.map((p) => deleteObject(p.key)));
+  }
+
+  return NextResponse.json({ ok: true });
 }

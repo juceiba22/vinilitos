@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import AdminNav from "@/components/AdminNav";
 import NewArtistPageForm from "./NewArtistPageForm";
+import DeletePageButton from "./DeletePageButton";
 import { daysUntil, isExpired } from "@/lib/subscription";
 
 // Muestra datos en vivo (vencimientos, borradores) — nunca debe quedar
@@ -102,6 +103,7 @@ export default async function AdminPagesPage() {
                             </Link>
                           </>
                         )}
+                        <DeletePageButton pageId={p.id} artistName={p.artistName} />
                       </div>
                     </td>
                   </tr>
