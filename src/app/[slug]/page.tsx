@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import VinylDisc from "@/components/VinylDisc";
 import { isExpired } from "@/lib/subscription";
 import { getCoverPalette, paletteToCssVars } from "@/lib/coverPalette";
+import { parseCredits } from "@/lib/credits";
 
 const PLATFORM_LABEL: Record<string, string> = {
   spotify: "Escuchar en Spotify",
@@ -22,7 +23,11 @@ export default async function PublicArtistPage({
 
   const page = await prisma.page.findUnique({
     where: { slug },
-    include: { links: { orderBy: { order: "asc" } } },
+    include: {
+      links: { orderBy: { order: "asc" } },
+      tracks: { orderBy: { order: "asc" } },
+      photos: { orderBy: { order: "asc" } },
+    },
   });
 
   if (!page || !page.published) {
@@ -36,6 +41,11 @@ export default async function PublicArtistPage({
   // no se pudo analizar) se usa el color de fondo elegido en el admin.
   const palette = await getCoverPalette(page.coverImageUrl);
   const themeVars = palette ? paletteToCssVars(palette) : {};
+
+  const credits = parseCredits(page.credits);
+  const hasInfo = credits.length > 0 || !!page.recordedAt || !!page.thanks;
+  const cardClass =
+    "bg-vinyl-black-soft/70 backdrop-blur-md border border-vinyl-line rounded-xl";
 
   return (
     <main
@@ -96,6 +106,7 @@ export default async function PublicArtistPage({
             </p>
           </div>
         ) : (
+          <>
           <div className="w-full flex flex-col gap-3 mt-8">
             {page.links.map((link) => (
               <a
@@ -131,6 +142,117 @@ export default async function PublicArtistPage({
               </p>
             )}
           </div>
+
+          {page.tracks.length > 0 && (
+            <section className="w-full mt-12">
+              <SectionTitle>
+                {page.releaseType === "single" ? "Letra" : "Canciones y letras"}
+              </SectionTitle>
+              <ul className="flex flex-col gap-2">
+                {page.tracks.map((track, i) =>
+                  track.lyrics ? (
+                    <li key={track.id}>
+                      <details className={`${cardClass} group`}>
+                        <summary className="flex items-center gap-3 p-3 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                          {page.releaseType !== "single" && (
+                            <span className="text-vinyl-accent text-xs w-5 text-right shrink-0">
+                              {i + 1}
+                            </span>
+                          )}
+                          <span className="flex-1 text-sm text-vinyl-cream">
+                            {track.title}
+                          </span>
+                          <span className="text-[11px] uppercase tracking-wide text-vinyl-accent group-open:hidden">
+                            Ver letra
+                          </span>
+                          <span className="text-[11px] uppercase tracking-wide text-vinyl-accent hidden group-open:inline">
+                            Cerrar
+                          </span>
+                        </summary>
+                        <p className="px-4 pb-5 pt-1 text-sm leading-relaxed text-vinyl-cream whitespace-pre-line">
+                          {track.lyrics}
+                        </p>
+                      </details>
+                    </li>
+                  ) : (
+                    <li key={track.id} className={`${cardClass} flex items-center gap-3 p-3`}>
+                      {page.releaseType !== "single" && (
+                        <span className="text-vinyl-accent text-xs w-5 text-right shrink-0">
+                          {i + 1}
+                        </span>
+                      )}
+                      <span className="flex-1 text-sm text-vinyl-cream">{track.title}</span>
+                    </li>
+                  )
+                )}
+              </ul>
+            </section>
+          )}
+
+          {hasInfo && (
+            <section className="w-full mt-12">
+              <SectionTitle>Info</SectionTitle>
+              <div className={`${cardClass} p-5 flex flex-col gap-5 text-sm`}>
+                {credits.length > 0 && (
+                  <dl className="flex flex-col gap-2">
+                    {credits.map((credit, i) => (
+                      <div key={i} className="flex gap-2">
+                        {credit.role && (
+                          <dt className="text-vinyl-accent shrink-0">{credit.role}:</dt>
+                        )}
+                        <dd className="text-vinyl-cream">{credit.names}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
+                {page.recordedAt && (
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wide text-vinyl-accent mb-1">
+                      Grabado en
+                    </p>
+                    <p className="text-vinyl-cream">{page.recordedAt}</p>
+                  </div>
+                )}
+                {page.thanks && (
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wide text-vinyl-accent mb-1">
+                      Agradecimientos
+                    </p>
+                    <p className="text-vinyl-cream whitespace-pre-line leading-relaxed">
+                      {page.thanks}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
+          {page.photos.length > 0 && (
+            <section className="w-full mt-12">
+              <SectionTitle>Backstage</SectionTitle>
+              <ul className="grid grid-cols-2 gap-3">
+                {page.photos.map((photo) => (
+                  <li key={photo.id} className={`${cardClass} overflow-hidden`}>
+                    <a href={photo.url} target="_blank" rel="noreferrer">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={photo.url}
+                        alt={photo.caption ?? ""}
+                        loading="lazy"
+                        className="w-full aspect-square object-cover"
+                      />
+                    </a>
+                    {photo.caption && (
+                      <p className="px-3 py-2 text-xs text-vinyl-cream-dim">
+                        {photo.caption}
+                      </p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+          </>
         )}
 
         <a
@@ -143,5 +265,13 @@ export default async function PublicArtistPage({
         </a>
       </div>
     </main>
+  );
+}
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="font-display text-lg text-vinyl-cream text-center mb-4 [text-shadow:0_1px_8px_rgb(0_0_0/0.6)]">
+      {children}
+    </h2>
   );
 }

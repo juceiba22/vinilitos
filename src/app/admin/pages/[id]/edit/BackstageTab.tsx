@@ -149,7 +149,8 @@ export default function BackstageTab({
       <h2 className="font-display text-xl mb-1">Backstage</h2>
       <p className="text-vinyl-cream-dim text-xs mb-4">
         Fotos del detrás de escena: ensayos, grabación, shows. JPG, PNG, WEBP,
-        GIF o AVIF de hasta 10 MB.
+        GIF o AVIF de hasta 10 MB. Las fotos, el orden y los epígrafes se
+        guardan solos: no hace falta tocar ningún botón de guardar.
       </p>
 
       {!r2Configured ? (
