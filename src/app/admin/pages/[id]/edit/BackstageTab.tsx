@@ -42,9 +42,20 @@ export default function BackstageTab({
       headers: { "Content-Type": file.type },
       body: file,
     }).catch(() => null);
-    if (!putRes || !putRes.ok) {
+    // Si fetch falla sin respuesta, el navegador bloqueó el pedido: casi
+    // siempre es CORS (el origen actual no está permitido en el bucket).
+    if (!putRes) {
       throw new Error(
-        `No se pudo subir "${file.name}" a R2. Revisá la configuración de CORS del bucket.`
+        `No se pudo subir "${file.name}" a R2: el bucket no acepta subidas desde ${window.location.origin}. Agregá ese origen a la política de CORS del bucket.`
+      );
+    }
+    // Si R2 respondió con error, mostramos su código (p. ej.
+    // SignatureDoesNotMatch si las claves R2_* del servidor están mal).
+    if (!putRes.ok) {
+      const body = await putRes.text().catch(() => "");
+      const code = body.match(/<Code>([^<]+)<\/Code>/)?.[1];
+      throw new Error(
+        `R2 rechazó "${file.name}" (HTTP ${putRes.status}${code ? `: ${code}` : ""}). Revisá las variables R2_* del servidor.`
       );
     }
 

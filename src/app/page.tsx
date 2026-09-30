@@ -109,14 +109,14 @@ export default function Home() {
     >
       {/* Portada */}
       <header className="relative overflow-hidden">
-        <nav className="max-w-6xl mx-auto px-6 pt-6 flex justify-end gap-6 text-xs uppercase tracking-[0.2em] text-(--cat-yellow)/80">
-          <a href="#que-es" className="hover:text-(--cat-yellow) hidden sm:inline">
+        <nav className="max-w-6xl mx-auto px-6 pt-6 flex flex-wrap justify-end gap-x-4 gap-y-2 sm:gap-x-6 text-xs uppercase tracking-[0.12em] sm:tracking-[0.2em] text-(--cat-yellow)/80">
+          <a href="#que-es" className="hover:text-(--cat-yellow)">
             Qué es
           </a>
           <a href="#packs" className="hover:text-(--cat-yellow)">
             Packs
           </a>
-          <a href="#pedido" className="hover:text-(--cat-yellow) hidden sm:inline">
+          <a href="#pedido" className="hover:text-(--cat-yellow)">
             Pedidos
           </a>
           <a href="#trabajos" className="hover:text-(--cat-yellow)">
